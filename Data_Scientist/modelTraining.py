@@ -1,4 +1,20 @@
 # Databricks notebook source
+!pip install --upgrade pip
+!pip install --upgrade azure-mgmt-storage azure-databricks-sdk-python azureml-core 
+!pip install --upgrade azure-cli
+!az extension add -n azure-cli-ml
+!pip install azureml-sdk[automl,explain,notebooks]>=1.42.0
+
+# COMMAND ----------
+
+!pip install ../dist/helperfunctions-0.0.1-py3-none-any.whl
+!pip install typing_extensions==4.4.0
+import typing_extensions
+from importlib import reload
+reload(typing_extensions)
+!pip install azure-ai-ml
+
+# COMMAND ----------
 
 
 # Modules.
@@ -21,7 +37,9 @@ import yaml
 import pathlib
 import sys
 from argparse import ArgumentParser
+
 # COMMAND ----------
+
 import mlflow
 import mlflow.azureml
 import azureml.mlflow
@@ -30,11 +48,14 @@ from azureml.core import Workspace
 from azureml.mlflow import get_portal_url
 from mlflow.deployments import get_deploy_client
 from azure.identity import DefaultAzureCredential
+import datetime
 import os
+
+# COMMAND ----------
+
 from azure.ai.ml import MLClient
 from azure.ai.ml.entities import Model
 from azure.ai.ml.constants import AssetTypes
-import datetime
 from azure.ai.ml.entities import ManagedOnlineEndpoint, ManagedOnlineDeployment
 
 # COMMAND ----------
@@ -44,9 +65,8 @@ p.add_argument("--env", required=False, type=str)
 namespace = p.parse_known_args(sys.argv[1:])[0]
 display(namespace)
 
-
-
 # COMMAND ----------
+
 if namespace.env is not None:
     display(namespace.env)
     params = yaml.safe_load(pathlib.Path(namespace.env).read_text())
@@ -61,12 +81,14 @@ else:
 
 
 # COMMAND ----------
+
 rounded_unix_timestamp_udf = udf(rounded_unix_timestamp, IntegerType())
 raw_data = spark.read.format("delta").load("/databricks-datasets/nyctaxi-with-zipcodes/subsampled")
 taxi_data = rounded_taxi_data(raw_data)
 display(taxi_data)
 
 # COMMAND ----------
+
 pickup_features_table = "feature_store_taxi_example.trip_pickup_features"
 dropoff_features_table = "feature_store_taxi_example.trip_dropoff_features"
 
@@ -88,6 +110,7 @@ dropoff_feature_lookups = [
 
 
 # COMMAND ----------
+
 mlflow.end_run()
 mlflow.start_run() 
 exclude_columns = ["rounded_pickup_datetime", "rounded_dropoff_datetime"]
@@ -132,6 +155,7 @@ model = lgb.train(
 
 
 # COMMAND ----------
+
 fs.log_model(
   model,
   artifact_path="model_packaged",
@@ -141,6 +165,7 @@ fs.log_model(
 )
 
 # COMMAND ----------
+
 pyfunc_model = fareClassifier(model)
 
 # End the current MLflow run and start a new one to log the new pyfunc model
@@ -222,4 +247,5 @@ with mlflow.start_run():
 #    description='Model to predict taxi fares in NYC.')
 
 # COMMAND ----------
+
 
