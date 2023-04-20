@@ -1,5 +1,5 @@
 # Databricks notebook source
-
+!pip install ../dist/helperfunctions-0.0.1-py3-none-any.whl
 
 # COMMAND ----------
 
@@ -22,7 +22,6 @@ from helperFunctions.helperFunction import *
 # COMMAND ----------
 
 # Ingest Parameters Files
-
 
 p = ArgumentParser()
 p.add_argument("--env", required=False, type=str)
@@ -72,9 +71,7 @@ def filter_df_by_ts(df, ts_column, start_date, end_date):
         df = df.filter(col(ts_column) < end_date)
     return df
 
-
 # COMMAND ----------
-
 
 pickup_features = pickup_features_fn(
     raw_data, ts_column="tpep_pickup_datetime", start_date=datetime(2016, 1, 1), end_date=datetime(2016, 1, 31)
@@ -116,9 +113,7 @@ display(raw_data)
 
 # COMMAND ----------
 
-
 # Compute the pickup_features feature group.
-
 
 pickup_features_df = pickup_features_fn(
   df=raw_data,
